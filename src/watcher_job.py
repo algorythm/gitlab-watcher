@@ -36,6 +36,8 @@ class GitLabWatcher():
                 self.app.title = f't: {tag}'
             elif ci == 'running':
                 self.app.title = f'👷🏼‍♀️ {tag}'
+            elif ci == 'pending':
+                self.app.title = f'🍿 {tag}'
             else:
                 self.app.title = f'☔️ {tag}'
                 self.logger.info(f'ci status for {tag}: {ci}')
