@@ -27,16 +27,17 @@ class GitLabWatcher():
                 time.sleep(1)
                 continue
 
-            if self.ci_status == 'running' and ci == 'running':
+            if self.ci_status == 'running' and ci.status == 'running':
                 tag_url = f'https://gitlab.com/consensusaps/connect/-/tags/{tag}'
                 rumps.notification('Build Completed', f'Completed build for {tag}', f'Docker build for {tag} has not completed', sound=True)
                 Notifier.notify(f'Docker build for {tag} has not completed', title=f'Completed build for {tag}', open=tag_url)
 
-            if ci == 'success':
+            if ci.status == 'success':
                 self.app.title = f't: {tag}'
-            elif ci == 'running':
-                self.app.title = f'👷🏼‍♀️ {tag}'
-            elif ci == 'pending':
+            elif ci.status == 'running':
+                self.logger.info(f'building {tag} -- {ci.completed_jobs} / {ci.job_count} -- {ci.pending_jobs} pending')
+                self.app.title = f'👷🏼‍♀️ {tag} ({ci.completed_jobs} / {ci.job_count})[{ci.pending_jobs}]'
+            elif ci.status == 'pending':
                 self.app.title = f'🍿 {tag}'
             else:
                 self.app.title = f'☔️ {tag}'
