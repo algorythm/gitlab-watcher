@@ -20,7 +20,7 @@ def main(config: WatcherConfig, tag: str = None):
     if tag == None:
         tag = gl.latest_tag()
     else:
-        tag = gl.get_tag('v2.0.53')
+        tag = gl.get_tag(tag)
 
     changes = list_mr_ids(tag.message)
 
