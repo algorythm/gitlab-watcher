@@ -26,6 +26,10 @@ class GitLabWatcher():
             if self.app == None:
                 time.sleep(1)
                 continue
+            if ci == None:
+                self.logger.debug(f'tag {tag} has no pipeline associated')
+                time.sleep(60)
+                continue
 
             if self.ci_status == 'running' and ci.status == 'running':
                 tag_url = f'https://gitlab.com/consensusaps/connect/-/tags/{tag}'

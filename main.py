@@ -23,7 +23,8 @@ def main(config: GitLabConfig):
     latest_tag = gl.latest_tag()
     ci_status = gl.pipeline_status_for_tag(latest_tag.name)
 
-    logger.info(f'tag: {latest_tag.name}::{ci_status.status} ({ci_status.completed_jobs} / {ci_status.job_count} -- {ci_status.pending_jobs} pending)')
+    if ci_status != None:
+        logger.info(f'tag: {latest_tag.name}::{ci_status.status} ({ci_status.completed_jobs} / {ci_status.job_count} -- {ci_status.pending_jobs} pending)')
 
     GitLabWatcher(gl, user['username']).run()
 
