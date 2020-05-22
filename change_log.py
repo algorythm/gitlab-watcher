@@ -1,12 +1,10 @@
 from __future__ import annotations
 from typing import List
-# from src.config import get_env
 from src.config import ConfigReader, WatcherConfig
 from src.gitlab import GitLab
 
 from src.common.logging_helper import get_logger
 from src.watcher_job import GitLabWatcher
-# import re
 from src.common.change_log import Change
 from datetime import datetime
 
