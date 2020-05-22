@@ -27,21 +27,22 @@ class GitLabWatcher():
                 time.sleep(1)
                 continue
             if ci == None:
-                self.logger.debug(f'tag {tag} has no pipeline associated')
+                self.logger.warning(f'tag {tag} has no pipeline associated')
                 time.sleep(60)
                 continue
 
-            if self.ci_status == 'running' and ci.status == 'running':
+            if self.ci_status == 'running' and ci.status == 'success':
                 tag_url = f'https://gitlab.com/consensusaps/connect/-/tags/{tag}'
-                rumps.notification('Build Completed', f'Completed build for {tag}', f'Docker build for {tag} has not completed', sound=True)
+                # rumps.notification('Build Completed', f'Completed build for {tag}', f'Docker build for {tag} has not completed', sound=True)
                 Notifier.notify(f'Docker build for {tag} has not completed', title=f'Completed build for {tag}', open=tag_url)
+            self.ci_status = ci.status
 
-            if ci.status == 'success':
+            if self.ci_status == 'success':
                 self.app.title = f't: {tag}'
-            elif ci.status == 'running':
+            elif self.ci_status == 'running':
                 self.logger.info(f'building {tag} -- {ci.completed_jobs} / {ci.job_count} -- {ci.pending_jobs} pending')
                 self.app.title = f'👷🏼‍♀️ {tag} ({ci.completed_jobs} / {ci.job_count})[{ci.pending_jobs}]'
-            elif ci.status == 'pending':
+            elif self.ci_status == 'pending':
                 self.app.title = f'🍿 {tag}'
             else:
                 self.app.title = f'☔️ {tag}'
