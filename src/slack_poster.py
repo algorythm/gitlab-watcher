@@ -8,6 +8,8 @@ from src.common.change_log import Change
 class SlackPoster:
     def __init__(self, config: SlackConfig):
         self.config = config
+        if not self.config.configured:
+            return
         self.logger = get_logger(__name__)
 
         self.http = Http('https://slack.com/api')

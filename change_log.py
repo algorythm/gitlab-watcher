@@ -28,7 +28,8 @@ def main(config: WatcherConfig, tag: str = None):
     markdown = write_temp_file('md', markdown, 'nvim')
 
     gl.post_release(tag.name, markdown)
-    sp.post_change_log(tag.name, change_log)
+    if sp.config.configured:
+        sp.post_change_log(tag.name, change_log)
 
 def format_changelog(version_number: str, changes: List[Change]):
     breaking = []
