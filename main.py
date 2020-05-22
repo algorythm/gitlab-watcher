@@ -1,4 +1,4 @@
-from src.config import get_env
+from src.config import ConfigReader, GitLabConfig
 from src.gitlab import GitLab
 from datetime import datetime
 import time
@@ -12,13 +12,11 @@ import re
 # nice rumps example: https://camillovisini.com/create-macos-menu-bar-app-pomodoro/
 # send notification with view button: https://g3rv4.com/2015/08/macos-notifications-python-pycharm
 
-def main(config_path: str):
+def main(config: GitLabConfig):
     logger = get_logger(__name__)
 
-    config = get_env(config_path)['gitlab']
-    gl = GitLab(17170378, config['token'])
+    gl = GitLab(config.project_id, config.token)
 
-    # logger.debug('fetching GitLab user information')
     user = gl.get_user()
     logger.info(f'Welcome {user["name"]} ({user["username"]})')
 
@@ -30,4 +28,5 @@ def main(config_path: str):
     GitLabWatcher(gl, user['username']).run()
 
 if __name__ == '__main__':
-    main('env.yml')
+    config = ConfigReader().read_config()
+    main(config.gitlab_config)
