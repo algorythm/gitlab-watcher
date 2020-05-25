@@ -147,6 +147,7 @@ class GitLab:
         self.logger.debug(f'creating a release for {tag}')
         resp = self.http.post_json(f'/projects/{self.project_id}/releases', {
             'ref': tag,
+            'tag_name': tag,
             'description': change_log
         })
 
