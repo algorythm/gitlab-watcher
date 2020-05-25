@@ -14,6 +14,7 @@ import sys
 
 # Changelog format: https://keepachangelog.com/en/1.0.0/
 def main(config: WatcherConfig, tag: str = None):
+    logger = get_logger(__name__)
     gl = GitLab(config.gitlab_config.project_id, config.gitlab_config.token)
     sp = SlackPoster(config.slack_config)
 
@@ -26,6 +27,10 @@ def main(config: WatcherConfig, tag: str = None):
 
     change_log, markdown = format_changelog(tag.name, changes)
     markdown = write_temp_file('md', markdown, 'nvim')
+
+    mrs_to_change = [c.mr for c in changes]
+    logger.info(f'check labels for labels {mrs_to_change}')
+    gl.change_mr_labels(mrs_to_change)
 
     gl.post_release(tag.name, markdown)
     if sp.config.configured:

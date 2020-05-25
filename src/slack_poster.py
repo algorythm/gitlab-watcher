@@ -38,9 +38,8 @@ class SlackPoster:
             'channel': self.config.changelog_channel,
             'blocks': blocks
         }
-        print(body)
 
-        self.logger.debug(f'Posting changelog for {version} to #{body["channel"]}')
+        self.logger.debug(f'posting changelog for {version} to #{body["channel"]}')
         resp = self.http.post_json('/chat.postMessage', body)
 
         error = self.parse_error(resp)

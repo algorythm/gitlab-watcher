@@ -2,12 +2,18 @@ from __future__ import annotations
 from src.common.http_helper import Http
 from src.common.logging_helper import get_logger
 
+from progressbar import ProgressBar
+import progressbar
+import time
+
 class GitLab:
     def __init__(self, project_id: str, token: str, base = 'https://gitlab.com/api/v4'):
         self.project_id = project_id
         self.token = token
         self.http = Http(base)
 
+        progressbar.streams.wrap_stdout()
+        progressbar.streams.wrap_stderr()
         self.logger = get_logger(__name__)
 
         self.http.add_header('Private-Token', token)
@@ -37,6 +43,61 @@ class GitLab:
 
         result = resp.json()
         return Tag(result['name'], result['message'])
+
+    def get_merge_request(self, mr_id: int, logging: bool = True):
+        if logging:
+            self.logger.debug(f'fetching mr {mr_id} from GitLab')
+        resp = self.http.get(f'/projects/{self.project_id}/merge_requests/{mr_id}')
+
+        if resp.status_code == 404:
+            return None
+
+        return resp.json()
+
+    def set_mr_label(self, mr_id: str, label: str, logging: bool = True):
+        if logging:
+            self.logger.debug(f'setting label "{label}" for MR !{mr_id}')
+
+        resp = self.http.put_json(f'/projects/{self.project_id}/merge_requests/{mr_id}', {'add_labels': label})
+
+        if resp.status_code == 404:
+            return None
+
+        return resp.json()
+
+    def change_mr_labels(self, *mrs):
+        merge_requests = []
+        updated_merge_requests = 0
+
+        bar = ProgressBar(max_value=len(mrs[0]), redirect_stdout=True, redirect_stderr=True)
+
+        for i, mr in enumerate(mrs[0]):
+            self.logger.info(f'Handling MR !{mr}')
+            fetched_mr = self.get_merge_request(mr, True)
+
+            # Get phase status for MR
+            phase_label = None
+            for label in fetched_mr['labels']:
+                if not label.startswith('phase::'):
+                    continue
+                phase_label = label
+
+            merge_requests.append((fetched_mr, phase_label))
+
+            # Set phase::acceptance-testing label for MR
+            if phase_label == 'phase::review' or phase_label == None:
+                self.logger.debug(f'set !{mr} to phase::acceptance-testing')
+                self.set_mr_label(mr, 'phase::acceptance-testing')
+                updated_merge_requests += 1
+
+            bar.update(i)
+        bar.finish()\
+
+        self.logger.info(f'updated labels for {updated_merge_requests} merge requests')
+
+        for fetched, label in merge_requests:
+            if label not in ['phase::acceptance-testing', 'phase::finalized']:
+                self.logger.error(f'failed to handle !{fetched["iid"]}, label: {label}')
 
     def pipeline_status_for_tag(self, tag: str) -> CiStatus:
         self.logger.debug(f'looking for ci-job for "{tag}"')

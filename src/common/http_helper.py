@@ -16,11 +16,24 @@ class Http:
         self.parse_errors(url, response)
         return response
 
-    def post_json(self, url: str, body) -> Response:
-        self.logger.info(f'posting {self.base}/{url.lstrip("/")}')
+    def put_json(self, url: str, body, logging: bool = True) -> Response:
+        if logging:
+            self.logger.info(f'putting {self.base}/{url.lstrip("/")}')
+        response = requests.put(f'{self.base}/{url.lstrip("/")}', headers=self.headers, json=body)
+
+        if logging:
+            self.parse_errors(url, response)
+
+        return response
+
+    def post_json(self, url: str, body, logging: bool = True) -> Response:
+        if logging:
+            self.logger.info(f'posting {self.base}/{url.lstrip("/")}')
         headers = self.headers
         response = requests.post(f'{self.base}/{url.lstrip("/")}', headers=headers, json=body)
-        self.parse_errors(url, response)
+
+        if logging:
+            self.parse_errors(url, response)
         return response
 
     def parse_errors(self, url: str, response: Response):
