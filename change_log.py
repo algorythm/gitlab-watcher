@@ -89,7 +89,7 @@ def format_changelog(version_number: str, changes: List[Change]):
     return change_log, base
 
 def format_row(change: Change) -> str:
-    return f'- {change.message.strip()} [!{change.mr}](https://gitlab.com/consensusaps/connect/-/merge_requests/{change.mr})\n'
+    return f'- {change.message.strip()} [[!{change.mr}](https://gitlab.com/consensusaps/connect/-/merge_requests/{change.mr})]\n'
 
 def list_mr_ids(message: str) -> List[Change]:
     changes = []

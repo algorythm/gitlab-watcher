@@ -89,18 +89,13 @@ class GitLab:
                 self.logger.debug(f'set !{mr} to phase::acceptance-testing')
                 self.set_mr_label(mr, 'phase::acceptance-testing')
                 updated_merge_requests += 1
-            elif phase_label != 'phase::finalized':
+            elif phase_label != 'phase::finalized' and phase_label != 'phase::acceptance-testing':
                 self.logger.error(f'dunno what to do with !{mr}, "{phase_label}"')
 
             bar.update(i)
-        bar.finish()\
+        bar.finish()
 
         self.logger.info(f'updated labels for {updated_merge_requests} merge requests')
-
-        # Makes no sense - fetched before the label is changed
-        # for fetched, label in merge_requests:
-        #     if label not in ['phase::acceptance-testing', 'phase::finalized']:
-        #         self.logger.error(f'failed to handle !{fetched["iid"]}, label: {label}')
 
     def pipeline_status_for_tag(self, tag: str) -> CiStatus:
         self.logger.debug(f'looking for ci-job for "{tag}"')
