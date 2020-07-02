@@ -101,6 +101,7 @@ class GitLab:
 
         for i, mr in enumerate(mrs[0]):
             self.logger.info(f'Handling MR !{mr}')
+            dev_only = False
             fetched_mr = self.get_merge_request(mr, True)
 
             # Get phase status for MR
@@ -109,13 +110,19 @@ class GitLab:
                 if not label.startswith('phase::'):
                     continue
                 phase_label = label
+                if label == 'impact::dev_only':
+                    dev_only = True
 
             merge_requests.append((fetched_mr, phase_label))
 
             # Set phase::acceptance-testing label for MR
-            if phase_label in ['phase::review', 'phase::lgtm', None]:
+            if phase_label in ['phase::review', 'phase::lgtm', None] and not dev_only:
                 self.logger.debug(f'set !{mr} to phase::acceptance-testing')
                 self.set_mr_label(mr, 'phase::acceptance-testing')
+                updated_merge_requests += 1
+            elif phase_label == 'phase::review' and dev_only:
+                self.logger.debug(f'set !{mr} to phase::finalized')
+                self.set_mr_label(mr, 'phase::finalized')
                 updated_merge_requests += 1
             elif phase_label != 'phase::finalized' and phase_label != 'phase::acceptance-testing':
                 self.logger.error(f'dunno what to do with !{mr}, "{phase_label}"')
