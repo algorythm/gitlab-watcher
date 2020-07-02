@@ -33,16 +33,44 @@ class GitLab:
 
         return Tag(latest_tag['name'], latest_tag['message'])
 
-    def get_tag(self, tag: str) -> Tag:
+    def get_tag(self, tag: str = None) -> Tag:
         self.logger.debug(f'fetching tag {tag} from GitLab')
-        resp = self.http.get(f'/projects/{self.project_id}/repository/tags/{tag}')
+
+        if tag != None:
+            resp = self.http.get(f'/projects/{self.project_id}/repository/tags/{tag}')
+        else:
+            resp = self.http.get(f'/projects/{self.project_id}/repository/tags')
 
         if resp.status_code == 404:
             self.logger.warning(f"couldn't find tag {tag}")
             return None
 
         result = resp.json()
-        return Tag(result['name'], result['message'])
+
+        if tag != None:
+            return Tag(result['name'], result['message'])
+        else:
+            tags = []
+            for x in result:
+                tags.append(Tag(x['name'], x['message']))
+            return tags
+
+    def get_release(self, tag: str = None):
+        self.logger.debug(f'looking for release with tag {tag}')
+        self.logger.debug(self.project_id)
+        if tag != None:
+            try:
+                resp = self.http.get(f'/projects/{self.project_id}/releases/{tag}')
+            except:
+                return None
+        else:
+            resp = self.http.get(f'/projects/{self.project_id}/releases')
+
+        if resp.status_code == 404:
+            self.logger.warning(f"couldn't find a release with tag {tag}")
+            return None
+
+        return resp.json()
 
     def get_merge_request(self, mr_id: int, logging: bool = True):
         if logging:
@@ -127,16 +155,6 @@ class GitLab:
 
             return CiStatus(pipeline_id, ci_status, len(result), successful_jobs, pending_jobs)
         return CiStatus(pipeline_id, ci_status)
-
-    def get_release(self, tag: str):
-        self.logger.debug(f'looking for release with tag {tag}')
-        resp = self.http.get(f'/projects/{self.project_id}/releases/{tag}')
-
-        if resp.status_code == 404:
-            self.logger.warning(f"couldn't find a release with tag {tag}")
-            return None
-
-        return resp.json()
 
     def post_release(self, tag: str, change_log: str):
         self.logger.debug(f'creating a release for {tag}')

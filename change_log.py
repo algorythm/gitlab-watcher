@@ -10,7 +10,7 @@ from datetime import datetime
 
 from src.common.file_editor import write_temp_file
 from src.slack_poster import SlackPoster
-import sys
+import argparse, traceback, re
 
 # Changelog format: https://keepachangelog.com/en/1.0.0/
 def main(config: WatcherConfig, tag: str = None):
@@ -35,6 +35,42 @@ def main(config: WatcherConfig, tag: str = None):
     gl.post_release(tag.name, markdown)
     if sp.config.configured:
         sp.post_change_log(tag.name, change_log)
+
+def list_latest_releases(config: WatcherConfig, tag: str = None):
+    """
+    Displays the latest 10 releases on GitLab
+    """
+
+    gl = GitLab(config.gitlab_config.project_id, config.gitlab_config.token)
+    latest_tag = gl.latest_tag()
+    # releases = gl.get_release()
+
+    if tag == None:
+        latest_tags = gl.get_tag()
+    else:
+        latest_tags = [gl.get_tag(tag)]
+    tags_formatted = []
+
+    for tag in latest_tags:
+        release_exists = False
+
+        release = gl.get_release(tag.name)
+
+        if release != None:
+            release_exists = True
+
+        tags_formatted.append((tag.name, release_exists))
+
+    print(f'Latest Tag: {latest_tag.name}\n')
+
+    for name, release_exists in tags_formatted:
+        exists = '?'
+        if release_exists:
+            exists = '+'
+        else:
+            exists = '-'
+
+        print(f'- {name} [{exists}]')
 
 def format_changelog(version_number: str, changes: List[Change]):
     breaking = []
@@ -99,7 +135,32 @@ def list_mr_ids(message: str) -> List[Change]:
 
 if __name__ == '__main__':
     config = ConfigReader().read_config()
-    if len(sys.argv) == 2:
-        main(config, tag = sys.argv[1])
-    else:
-        main(config)
+
+    parser = argparse.ArgumentParser(description='Automate changelogs and releases on GitLab')
+    parser.add_argument('tag', type=str, nargs='?', help='specify a specific tag to apply for', default=None)
+    parser.add_argument('--display', '-d', action='store_true', help='shows 10 latest tags and release on GitLab')
+    args = parser.parse_args()
+
+    try:
+        if args.display:
+            list_latest_releases(config, args.tag)
+        elif args.tag != None:
+            # print(f'using tag {args.tag}')
+            main(config, args.tag)
+        else:
+            main(config)
+    except Exception as e:
+        print(e)
+        print()
+        track = traceback.format_exc()
+        # print('---')
+        # print(track)
+        # print('---')
+
+        changes = re.findall(r'File "((\w|\.|-|\_|\/|\\|\d+)+)", line (\d+)', track)
+        for change in changes:
+            if len(change) < 3:
+                continue
+            file = change[0]
+            line = change[2]
+            print(f'{file}, line {line}')
