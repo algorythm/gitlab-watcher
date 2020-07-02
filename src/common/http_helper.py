@@ -60,4 +60,4 @@ class Http:
             self.logger.warning(f"{url}: resource doesn't exist")
         else:
             self.logger.error(f'{url} failed request ({response.status_code}): {error_message}')
-
+            raise Exception(error_message)
