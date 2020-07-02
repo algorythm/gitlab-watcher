@@ -100,6 +100,8 @@ def format_changelog(version_number: str, changes: List[Change]):
             other.append(change)
             continue
     base = f'## [{version_number}](https://gitlab.com/consensusaps/connect/-/tags/{version_number}) - {datetime.now().strftime("%Y-%m-%d")}\n'
+    base += '### Release Highlights\nA short description about this new release\n'
+    base += '- TypeScript 3.8 update\n- ngcc improvements\n   - performance optimizations'
 
     change_log = {
         'Breaking Changes': breaking,
