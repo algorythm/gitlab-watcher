@@ -73,6 +73,7 @@ def list_latest_releases(config: WatcherConfig, tag: str = None):
         print(f'- {name} [{exists}]')
 
 def format_changelog(version_number: str, changes: List[Change]):
+    changes.sort(key=lambda x: x.scope)
     breaking = []
     additions = []
     removed = []
@@ -101,7 +102,7 @@ def format_changelog(version_number: str, changes: List[Change]):
             continue
     base = f'## [{version_number}](https://gitlab.com/consensusaps/connect/-/tags/{version_number}) - {datetime.now().strftime("%Y-%m-%d")}\n'
     base += '### Release Highlights\nA short description about this new release\n'
-    base += '- TypeScript 3.8 update\n- ngcc improvements\n   - performance optimizations'
+    base += '- TypeScript 3.8 update\n- ngcc improvements\n   - performance optimizations\n'
 
     change_log = {
         'Breaking Changes': breaking,
@@ -128,10 +129,10 @@ def format_changelog(version_number: str, changes: List[Change]):
 
 def format_row(change: Change) -> str:
     scope = ''
-    if change.scope != '' or change.scope != None:
+    if change.scope != '' and change.scope != None:
         scope = f'**{change.scope.strip()}**: '
 
-    return f'- **{scope}**: {change.message.strip()} [[!{change.mr}](https://gitlab.com/consensusaps/connect/-/merge_requests/{change.mr})]\n'
+    return f'- {scope}{change.message.strip()} [[!{change.mr}](https://gitlab.com/consensusaps/connect/-/merge_requests/{change.mr})]\n'
 
 def list_mr_ids(message: str) -> List[Change]:
     changes = []

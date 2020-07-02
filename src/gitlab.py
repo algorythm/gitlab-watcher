@@ -116,7 +116,7 @@ class GitLab:
             merge_requests.append((fetched_mr, phase_label))
 
             # Set phase::acceptance-testing label for MR
-            if phase_label in ['phase::review', 'phase::lgtm', None] and not dev_only:
+            if phase_label == 'phase::review' and not dev_only:
                 self.logger.debug(f'set !{mr} to phase::acceptance-testing')
                 self.set_mr_label(mr, 'phase::acceptance-testing')
                 updated_merge_requests += 1

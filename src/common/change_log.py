@@ -9,6 +9,9 @@ class Change:
         self.mr = mr
         self.is_breaking = breaking == '!'
 
+        if scope == None:
+            self.scope == ''
+
     def split(self, line):
         return re.findall(r'(\w+)(?:\(([^\)]+)\))?(!?):\s?([^\[]+)?\s?\[!(\d+)\]', line)[0]
 
