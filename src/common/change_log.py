@@ -13,7 +13,7 @@ class Change:
             self.scope == ''
 
     def split(self, line):
-        return re.findall(r'(\w+)(?:\(([^\)]+)\))?(!?):\s?([^\[]+)?\s?\[!(\d+)\]', line)[0]
+        return re.findall(r'(\w+)(?:\(([^\)]+)\))?(!?):\s?([^\[]+)?\s?\[!(\d+|N\/A|NA)\]', line)[0]
 
 if __name__ == '__main__':
     changes = [

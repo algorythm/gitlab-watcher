@@ -100,6 +100,9 @@ class GitLab:
         bar = ProgressBar(max_value=len(mrs[0]), redirect_stdout=True, redirect_stderr=True)
 
         for i, mr in enumerate(mrs[0]):
+            if mr == 'NA' or mr == 'N/A':
+                continue
+
             self.logger.info(f'Handling MR !{mr}')
             dev_only = False
             fetched_mr = self.get_merge_request(mr, True)
